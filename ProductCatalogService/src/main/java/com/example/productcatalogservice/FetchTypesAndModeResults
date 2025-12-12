@@ -1,0 +1,37 @@
+FetchType        FetchMode          Result
+
+LAZY             SELECT             Asked For Products - Queries - 2 select
+                                    Not Asked For Products - Queries - 1 select
+
+
+EAGER            SELECT             Asked For Products - Queries - 2 select
+                                    Not Asked For Products - Queries - 2 select
+
+
+
+LAZY             JOIN               Asked For Products - Queries - 1 join query
+                                    Not Asked For Products - Queries - 1 join query
+
+
+
+EAGER            JOIN               Asked For Products - Queries - 1 join query
+                                    Not Asked For Products - Queries - 1 join query
+
+
+
+LAZY             SUBSELECT           Asked For Products - Queries - 2 select
+                                     Not Asked For Products - Queries - 1 select
+
+
+
+EAGER            SUBSELECT          Asked For Products - Queries - 2 select
+                                    Not Asked For Products - Queries - 2 select
+
+-> Fetch Mode is more dominant over Fetch Type
+-> We will always see a join with Fetch Mode - JOIN , no matter whatever fetch type is
+-> In the tested scenario, SELECT AND SUBSELECT  results were same.
+
+//https://hackernoon.com/3-ways-to-deal-with-hibernate-n1-problem
+//https://dheerajgopinath.medium.com/the-issue-with-fetchmode-subselect-and-onetomany-mappings-in-hibernate-and-jpa-f79724068897
+//https://itecnote.com/tecnote/hibernate-subselect-vs-batch-fetching/
+//https://www.baeldung.com/hibernate-fetchmode
