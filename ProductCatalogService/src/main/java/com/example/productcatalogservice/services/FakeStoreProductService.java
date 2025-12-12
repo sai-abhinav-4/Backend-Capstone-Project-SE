@@ -66,6 +66,11 @@ public class FakeStoreProductService implements IProductService{
         return from(responseEntity.getBody());
     }
 
+    @Override
+    public void deleteProduct(Long id) {
+        //TODO
+    }
+
     public <T> ResponseEntity<T> requestForEntity(String url, @Nullable Object request, HttpMethod httpMethod, Class<T> responseType, Object... uriVariables) throws RestClientException {
         RequestCallback requestCallback = restTemplate.httpEntityCallback(request, responseType);
         ResponseExtractor<ResponseEntity<T>> responseExtractor = restTemplate.responseEntityExtractor(responseType);

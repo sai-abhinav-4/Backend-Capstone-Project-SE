@@ -7,22 +7,29 @@ import com.example.productcatalogservice.models.Category;
 import com.example.productcatalogservice.models.Product;
 import com.example.productcatalogservice.services.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class ProductController {
 
     @Autowired
+    @Qualifier("storageProductService")
     private IProductService productService;
 
     @GetMapping("/products")
-    public List<Product> getProducts() {
-        return productService.getAllProducts();
+    public List<ProductDto> getAllProducts() {
+        List<Product> products = productService.getAllProducts();
+        List<ProductDto> productDtos = new ArrayList<>();
+        for (Product product : products) {
+            productDtos.add(from(product));
+        }
+        return productDtos;
     }
 
 //    @GetMapping("/products/{id}")
@@ -66,7 +73,15 @@ public class ProductController {
     public ProductDto replaceProduct( @PathVariable("id") long productId, @RequestBody ProductDto productDto) {
         Product product = from(productDto);
         Product response = productService.replaceProduct(productId, product);
+        if(response == null){
+            throw new ProductNotFoundException("product with id " + productId + " not found");
+        }
         return from(response);
+    }
+
+    @DeleteMapping("/products/{id}")
+    public void deleteProduct( @PathVariable("id") long productId) {
+        productService.deleteProduct(productId);
     }
 
     private ProductDto from (Product product) {
