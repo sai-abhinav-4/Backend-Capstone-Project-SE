@@ -19,7 +19,7 @@ import java.util.List;
 public class ProductController {
 
     @Autowired
-    @Qualifier("storageProductService")
+//    @Qualifier("storageProductService")
     private IProductService productService;
 
     @GetMapping("/products")

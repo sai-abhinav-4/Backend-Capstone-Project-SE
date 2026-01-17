@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service("storageProductService")
+@Primary
 public class StorageProductService implements IProductService {
 
     @Autowired
