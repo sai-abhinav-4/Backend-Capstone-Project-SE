@@ -15,9 +15,9 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ProductController.class)
@@ -93,5 +93,51 @@ public class ProductControllerMvcTest {
 
 
 
+    }
+
+    @Test
+    public void getProductById_whenFound_returnsProductDto() throws Exception {
+        Product p = new Product(); p.setId(5L); p.setName("Found Product");
+        when(productService.getProductById(5L)).thenReturn(p);
+
+        ProductDto expectedDto = new ProductDto(); expectedDto.setId(5L); expectedDto.setName("Found Product");
+
+        mockMvc.perform(get("/products/5"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(expectedDto)))
+                .andExpect(jsonPath("$.id").value(5))
+                .andExpect(jsonPath("$.name").value("Found Product"));
+    }
+
+
+    @Test
+    public void replaceProduct_whenExists_returnsReplacedDto() throws Exception {
+        ProductDto requestDto = new ProductDto();
+        requestDto.setId(3L);
+        requestDto.setName("Replaced Product");
+        requestDto.setPrice(99.99);
+
+        Product returned = new Product();
+        returned.setId(3L);
+        returned.setName("Replaced Product");
+        returned.setPrice(99.99);
+
+        when(productService.replaceProduct(3L, any(Product.class))).thenReturn(returned);
+
+        mockMvc.perform(put("/products/3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(jsonPath("$.id").value(3))
+                .andExpect(jsonPath("$.name").value("Replaced Product"));
+    }
+
+    @Test
+    public void deleteProduct_invokesService() throws Exception {
+        mockMvc.perform(delete("/products/7"))
+                .andExpect(status().isOk());
+
+        verify(productService).deleteProduct(7L);
     }
 }

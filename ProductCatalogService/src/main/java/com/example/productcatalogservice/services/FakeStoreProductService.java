@@ -4,6 +4,7 @@ import com.example.productcatalogservice.dtos.FakeStoreProductDto;
 import com.example.productcatalogservice.models.Category;
 import com.example.productcatalogservice.models.Product;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -22,16 +23,28 @@ public class FakeStoreProductService implements IProductService{
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
+
     @Override
     public Product getProductById(Long id) {
 //      ResponseEntity<FakeStoreProductDto>  fakeStoreProductDtoResponseEntity =  restTemplate.getForEntity("https://fakestoreapi.com/products/{id}", FakeStoreProductDto.class, id);
+        FakeStoreProductDto fakeStoreProductDto=null;
 
-        ResponseEntity<FakeStoreProductDto>  fakeStoreProductDtoResponseEntity =
-                requestForEntity("https://fakestoreapi.com/products/{id}", null, HttpMethod.GET, FakeStoreProductDto.class, id);
+        fakeStoreProductDto = (FakeStoreProductDto) redisTemplate.opsForHash().get("PRODUCTS", id);
 
-        if(fakeStoreProductDtoResponseEntity.getStatusCode().equals(HttpStatusCode.valueOf(200)) && fakeStoreProductDtoResponseEntity.getBody() != null){
-          return from(fakeStoreProductDtoResponseEntity.getBody());
-      }
+        if(fakeStoreProductDto==null){
+            fakeStoreProductDto =
+                    requestForEntity("https://fakestoreapi.com/products/{id}",
+                            null, HttpMethod.GET, FakeStoreProductDto.class, id).getBody();
+
+            if(fakeStoreProductDto != null){
+                redisTemplate.opsForHash().put("PRODUCTS", id, fakeStoreProductDto);
+                return from(fakeStoreProductDto);
+            }
+        }else{
+            return from(fakeStoreProductDto);
+        }
 
       return null;
     }
@@ -69,6 +82,11 @@ public class FakeStoreProductService implements IProductService{
     @Override
     public void deleteProduct(Long id) {
         //TODO
+    }
+
+    @Override
+    public Product getProductBasedOnUserScope(Long productId, Long userId) {
+        return null;
     }
 
     public <T> ResponseEntity<T> requestForEntity(String url, @Nullable Object request, HttpMethod httpMethod, Class<T> responseType, Object... uriVariables) throws RestClientException {

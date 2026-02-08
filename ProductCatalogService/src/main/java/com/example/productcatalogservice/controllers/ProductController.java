@@ -62,6 +62,11 @@ public class ProductController {
             throw new ProductNotFoundException("product with id >20 not found");
     }
 
+    @GetMapping("/{productId}/{userId}")
+    public ProductDto getProductBasedOnUSerRole(@PathVariable long productId, @PathVariable long userId) {
+        return null;
+    }
+
     @PostMapping("/products")
     public ProductDto createProduct( @RequestBody ProductDto productDto) {
         Product product = from(productDto);

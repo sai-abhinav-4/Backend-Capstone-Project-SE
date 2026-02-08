@@ -3,11 +3,15 @@ package com.example.userauthservice.controller;
 import com.example.userauthservice.dto.LoginRequestDto;
 import com.example.userauthservice.dto.SignupRequestDto;
 import com.example.userauthservice.dto.UserDto;
+import com.example.userauthservice.dto.ValidateTokenDto;
 import com.example.userauthservice.models.User;
 import com.example.userauthservice.services.IAuthService;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,8 +35,22 @@ public class AuthController {
     //login
     @PostMapping("/login")
     public ResponseEntity<UserDto> login( @RequestBody LoginRequestDto loginRequestDto){
-        User user = authService.login( loginRequestDto.getEmail(), loginRequestDto.getPassword());
-        return new ResponseEntity<>(from(user), HttpStatus.OK);
+        Pair<User,String> userResponse = authService.login( loginRequestDto.getEmail(), loginRequestDto.getPassword());
+
+        MultiValueMap<String,String> header = new LinkedMultiValueMap<>();
+        header.add("Set-Cookie", userResponse.b);
+        User user = userResponse.a;
+        return new ResponseEntity<>(from(user), header, HttpStatus.OK);
+    }
+
+    @PostMapping("/validateToken")
+    public ResponseEntity<Void> validateToken(@RequestBody ValidateTokenDto validateTokenDto){
+       Boolean result = authService.validateToken(validateTokenDto.getToken());
+         if(result){
+            return new ResponseEntity<>(HttpStatus.OK);
+         }else{
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+         }
     }
 
     private UserDto from(User user){

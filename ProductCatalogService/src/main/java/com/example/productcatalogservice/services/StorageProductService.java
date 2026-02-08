@@ -1,11 +1,13 @@
 package com.example.productcatalogservice.services;
 
+import com.example.productcatalogservice.dtos.UserDto;
 import com.example.productcatalogservice.models.Product;
 import com.example.productcatalogservice.models.State;
 import com.example.productcatalogservice.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +18,9 @@ public class StorageProductService implements IProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Override
     public Product getProductById(Long id) {
@@ -54,5 +59,19 @@ public class StorageProductService implements IProductService {
                 productRepository.deleteById(id);
             }
         }
+    }
+
+    @Override
+    public Product getProductBasedOnUserScope(Long productId, Long userId) {
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if(productOptional.isPresent()) {
+            Product product = productOptional.get();
+            UserDto userDto = restTemplate.getForEntity("http://UserAuthService/users/{userId}", UserDto.class, userId).getBody();
+            if(userDto!=null){
+                System.out.println(userDto.getEmail());
+                return product;
+            }
+        }
+        return null;
     }
 }
